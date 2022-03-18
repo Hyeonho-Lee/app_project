@@ -8,6 +8,7 @@ void main() {
 class MyApp extends StatefulWidget {
   @override
   State createState() {
+    print('createState');
     return _MyApp();
   }
 }
@@ -18,7 +19,20 @@ class _MyApp extends State {
   Color _color = Colors.blue;
 
   @override
+  void initState() {
+    super.initState();
+    print('initState');
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    print('didChangeDependencies');
+  }
+
+  @override
   Widget build(BuildContext context) {
+    print('build');
     return MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
