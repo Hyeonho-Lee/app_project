@@ -40,7 +40,7 @@ class _MyApp extends State {
                       });
                     } else {
                       setState(() {
-                        test = 'hello';
+                        test = 'helloss';
                         _color = Colors.blue;
                       });
                     }
