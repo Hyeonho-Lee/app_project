@@ -20,3 +20,5 @@
 ## 앱 사이트맵
 ![앱_사이트맵](https://user-images.githubusercontent.com/54760301/158345166-da1d5823-4ace-4f81-91d1-00bb0de64862.JPG)
 
+## 화면 설계
+https://www.figma.com/file/V9jiWbDRWT1E9E6hp9ac58/App-Design?node-id=4%3A108
