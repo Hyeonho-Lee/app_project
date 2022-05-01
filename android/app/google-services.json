@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "599611677744",
+    "project_id": "culture-life-e727d",
+    "storage_bucket": "culture-life-e727d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:599611677744:android:3d0fcbdf95a8765915a1f5",
+        "android_client_info": {
+          "package_name": "com.example.app_project"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "599611677744-ilb5sacehkn21ek28etj16u7ta4dhs5o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChfqyuCLjWO3z2YKkpF_qdiFX-GFdz5Y8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "599611677744-ilb5sacehkn21ek28etj16u7ta4dhs5o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
