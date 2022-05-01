@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'register_screen.dart';
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -9,10 +13,14 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
 
-  //final _fromKey = GlobalKey<FromState>();
+  final _formKey = GlobalKey<FormState>();
 
   final TextEditingController emailController = new TextEditingController();
   final TextEditingController passwordController = new TextEditingController();
+
+  final _auth = FirebaseAuth.instance;
+
+  String? errorMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
         SizedBox(width: 5),
         GestureDetector(
           onTap: () {
-            //Navigator.push(context, MateralPageRoute(build: (context) => RegisterScreen()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterScreen()));
           },
           child: Text(
             "회원가입",
@@ -88,7 +96,15 @@ class _LoginScreenState extends State<LoginScreen> {
       autofocus: false,
       controller: emailController,
       keyboardType: TextInputType.emailAddress,
-      //validator: () {},
+      validator: (value) {
+        if (value!.isEmpty) {
+          return ("이메일 주소를 입력해주세요!");
+        }
+        if(!RegExp("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9+_.-]+.[a-z]").hasMatch(value)) {
+          return ("이메일 주소가 틀렸습니다!");
+        }
+        return null;
+      },
       onSaved: (value) {
         emailController.text = value!;
       },
@@ -117,7 +133,15 @@ class _LoginScreenState extends State<LoginScreen> {
       autofocus: false,
       controller: passwordController,
       obscureText: true,
-      //validator: () {},
+      validator: (value) {
+        RegExp regex = new RegExp(r'^.{6,}$');
+        if (value!.isEmpty) {
+          return ("비밀번호를 입력해주세요!");
+        }
+        if (!regex.hasMatch(value)) {
+          return ("비밀번호 입력이 잘못되었습니다. (최소 6글자)");
+        }
+      },
       onSaved: (value) {
         passwordController.text = value!;
       },
@@ -150,9 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
         padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
         minWidth: MediaQuery.of(context).size.width,
         onPressed: () {
-          print("아이디: " + emailController.text.toString());
-          print("비밀번호: " + passwordController.text.toString());
-          print("로그인 진행중");
+          signIn(emailController.text, passwordController.text);
         },
         child: Text(
           "로그인",
@@ -221,7 +243,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(42.0),
                   child: Form(
-                    //key: _fromKey,
+                    key: _formKey,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -246,13 +268,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           alignment: Alignment.center,
                           child: registerText,
                         ),
-                        SizedBox(height: 20),
+                        /*SizedBox(height: 20),
                         Align(
                           alignment: Alignment.center,
                           child: easyText,
                         ),
                         SizedBox(height: 20),
-                        easyloginButton,
+                        easyloginButton,*/
                       ],
                     ),
                   ),
@@ -263,5 +285,44 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  void signIn(String email, String password) async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        await _auth
+            .signInWithEmailAndPassword(email: email, password: password)
+            .then((uid) => {
+          Fluttertoast.showToast(msg: "로그인 성공!"),
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => HomeScreen())),
+        });
+      } on FirebaseAuthException catch (error) {
+        switch (error.code) {
+          case "invalid-email":
+            errorMessage = "이메일 주소가 틀렸습니다.";
+            break;
+          case "wrong-password":
+            errorMessage = "비밀번호가 틀렸습니다.";
+            break;
+          case "user-not-found":
+            errorMessage = "유저를 못찾습니다.";
+            break;
+          case "user-disabled":
+            errorMessage = "User with this email has been disabled.";
+            break;
+          case "too-many-requests":
+            errorMessage = "Too many requests";
+            break;
+          case "operation-not-allowed":
+            errorMessage = "Signing in with Email and Password is not enabled.";
+            break;
+          default:
+            errorMessage = "An undefined Error happened.";
+        }
+        Fluttertoast.showToast(msg: errorMessage!);
+        print(error.code);
+      }
+    }
   }
 }
