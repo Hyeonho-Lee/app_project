@@ -35,6 +35,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
       });
     });
+
+    //getJSONDate("progress");
   }
 
   @override
@@ -50,43 +52,56 @@ class _HomeScreenState extends State<HomeScreen> {
        textAlign: TextAlign.center,
     );
 
-    final nicknameText = Text(
-      '${loggedInUser.nickname}',
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 14,
-        letterSpacing: 2.0,
-      ),
+    final festival_bg = Image.asset(
+      'image/festival.png',
+      width: 60,
+      height: 60,
+      fit: BoxFit.fitHeight,
     );
 
-    final emailText = Text(
-      '${loggedInUser.email}',
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 14,
-        letterSpacing: 2.0,
-      ),
-    );
-
-    final loginoutButton = Material(
-      elevation: 5,
-      borderRadius: BorderRadius.circular(30),
-      color: Colors.white,
-      child: MaterialButton(
-        padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-        onPressed: () {
-          logout(context);
-        },
-        child: Text(
-          "로그아웃",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 20,
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
+    final cards = ListView.builder(
+      itemBuilder: (context, index) {
+        return Card(
+          child: InkWell(
+            child: Material(
+              elevation: 5,
+              borderRadius: BorderRadius.circular(5),
+              color: Colors.white,
+              child: MaterialButton(
+                padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+                minWidth: 500,
+                height: 100,
+                onPressed: () {
+                  print('눌럿냐');
+                },
+                child: Row(
+                  children: <Widget>[
+                    festival_bg,
+                    SizedBox(width: 20),
+                    Container (
+                      child: Text(
+                        all_event![0]['행사명'][index.toString()] + '\n' +
+                            '기간: ' + all_event![0]['시작일자'][index.toString()] + ' ~ ' +
+                            all_event![0]['종료일자'][index.toString()] + '\n' +
+                            '장소: ' + all_event![0]['개최장소'][index.toString()],
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 10,
+                          letterSpacing: 2.0,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.left,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
+      itemCount: all_event![0]["행사명"].length,
     );
 
     return Scaffold(
@@ -95,21 +110,10 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
               onPressed: () {
+                print('아이콘 클릭');
                 getJSONDate("new");
               },
-              icon: Icon(Icons.first_page)
-          ),
-          IconButton(
-              onPressed: () {
-                getJSONDate("end");
-              },
-              icon: Icon(Icons.contact_page)
-          ),
-          IconButton(
-              onPressed: () {
-                getJSONDate("progress");
-              },
-              icon: Icon(Icons.last_page)
+              icon: Icon(Icons.location_on)
           ),
         ],
       ),
@@ -119,24 +123,11 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               Container(
-                color: Color(0xffffff),
+                color: Colors.black12,
                 height: MediaQuery.of(context).size.height/1.5,
                 child: Padding(
-                  padding: const EdgeInsets.all(42.0),
-                  child: Form(
-                    //key: _fromKey,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        nicknameText,
-                        SizedBox(height: 5),
-                        emailText,
-                        SizedBox(height: 5),
-                        loginoutButton,
-                      ],
-                    ),
-                  ),
+                  padding: const EdgeInsets.all(21.0),
+                  child: cards,
                 ),
               )
             ],
@@ -170,6 +161,9 @@ class _HomeScreenState extends State<HomeScreen> {
         var json_decode = jsonDecode(text_replace);
         all_event = new List.empty(growable: true);
         all_event!.add(json_decode);
+
+        //print(all_event);
+        //print(all_event![0]["행사명"]['0']);
       }
     });
   }
