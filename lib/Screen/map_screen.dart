@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+//import 'package:platform_maps_flutter/platform_maps_flutter.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -15,28 +18,43 @@ class _MapScreenState extends State<MapScreen> {
 
   var response;
   List? all_event;
-
   late int _currentPageIndex;
 
   Completer<GoogleMapController> _controller = Completer();
 
-  static final CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(35.1429667, 129.03409),
-    zoom: 14.4746,
-  );
+  String country='';
+  String locality='';
+  String postalCode='';
 
-  static final CameraPosition _kLake = CameraPosition(
-      bearing: 192.8334901395799,
-      target: LatLng(35.1429667, 129.03409),
-      tilt: 59.440717697143555,
-      zoom: 19.151926040649414
-  );
+  late Position position;
+
+  List<Marker> _marker = [];
 
   @override
   void initState() {
     super.initState();
     all_event = new List.empty(growable: true);
     _currentPageIndex = 0;
+    getLocation();
+    getJSONDate("progress");
+  }
+
+  getLocation() async {
+    LocationPermission permission = await Geolocator.requestPermission();
+    position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+    print("//////////////////////////////////");
+    print(position.latitude);
+    print(position.longitude);
+    print("//////////////////////////////////");
+    print(placemarks.toString());
+    setState(() {
+      //country = placemarks[0].country == null? "": placemarks[0].country!;
+      //locality = placemarks[0].locality == null? "": placemarks[0].locality!;
+      //postalCode = placemarks[0].postalCode == null? "": placemarks[0].postalCode!;
+      // print(placemarks[0].toString());
+    });
   }
 
   BottomNavigationBarItem _bottomNavigationBarItem(String iconName, String label) {
@@ -89,10 +107,14 @@ class _MapScreenState extends State<MapScreen> {
       backgroundColor: Colors.white,
       body: GoogleMap(
         mapType: MapType.hybrid,
-        initialCameraPosition: _kGooglePlex,
+        initialCameraPosition: CameraPosition(
+          target: LatLng(position.latitude, position.longitude),
+          zoom: 14.4746,
+        ),
         onMapCreated: (GoogleMapController controller) {
           _controller.complete(controller);
         },
+        markers: Set<Marker>.of(_marker),
       ),floatingActionButton: FloatingActionButton(
         onPressed: _goToTheLake,
         child: Icon(Icons.add)
@@ -126,6 +148,25 @@ class _MapScreenState extends State<MapScreen> {
         all_event = new List.empty(growable: true);
         all_event!.add(json_decode);
 
+        Marker mark_1 = Marker(
+            markerId: MarkerId('1'),
+            position: LatLng(all_event![0]["위도"]['3'], all_event![0]["경도"]['3']),
+            infoWindow: InfoWindow(
+                title: "111"
+            )
+        );
+
+        Marker mark_2 = Marker(
+            markerId: MarkerId('2'),
+            position: LatLng(all_event![0]["위도"]['1'], all_event![0]["경도"]['1']),
+            infoWindow: InfoWindow(
+                title: "222"
+            )
+        );
+
+        _marker.add(mark_1);
+        _marker.add(mark_2);
+
         //print(all_event);
         //print(all_event![0]["행사명"]['0']);
       }
@@ -134,6 +175,13 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> _goToTheLake() async {
     final GoogleMapController controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newCameraPosition(_kLake));
+    controller.animateCamera(CameraUpdate.newCameraPosition(
+        CameraPosition(
+            bearing: 192.8334901395799,
+            target: LatLng(position.latitude, position.longitude),
+            tilt: 59.440717697143555,
+            zoom: 19.151926040649414
+        )
+    ));
   }
 }
