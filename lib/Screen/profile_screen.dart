@@ -1,8 +1,12 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:app_project/model/user_model.dart';
 import 'package:app_project/Screen/login_screen.dart';
+import 'package:app_project/Screen/home_screen.dart';
+import 'package:app_project/Screen/map_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -13,12 +17,17 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
 
+  late int _currentPageIndex;
+
   User? user = FirebaseAuth.instance.currentUser;
   UserModel loggedInUser = UserModel();
 
   @override
   void initState() {
     super.initState();
+
+    _currentPageIndex = 4;
+
     FirebaseFirestore.instance
         .collection("users")
         .doc(user!.uid)
@@ -33,6 +42,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    BottomNavigationBarItem _bottomNavigationBarItem(String iconName, String label) {
+      return BottomNavigationBarItem(
+        icon:Padding(
+          padding: const EdgeInsets.only(bottom: 5),
+          child: SvgPicture.asset("assets/svg/${iconName}_off.svg",width:22),
+        ),
+        activeIcon: Padding(
+          padding: const EdgeInsets.only(bottom: 5),
+          child: SvgPicture.asset("assets/svg/${iconName}_on.svg",width:22),
+        ),
+        label: label,
+      );
+    }
+
+    Widget _bottomNavigationBarwidget(){
+      return BottomNavigationBar(
+        type: BottomNavigationBarType.fixed, //설정 하지않으면 아이콘 누를경우 위로 올라감.
+        onTap: (int index){
+          print(index); // 작동하는지 테스트.
+          setState(() {
+            _currentPageIndex = index;
+          });
+        },
+        currentIndex: _currentPageIndex,
+        selectedFontSize: 12,
+        selectedItemColor: Colors.black, // 선택한 아이콘 글자 표시 및 색상 설정
+        selectedLabelStyle: TextStyle(color: Colors.black),// 선택한 아이콘 글자 표시 및 색상 설정
+        items: [
+          _bottomNavigationBarItem("home", "홈"),
+          _bottomNavigationBarItem("location", "지도"),
+          _bottomNavigationBarItem("notes", "캘린더"),
+          _bottomNavigationBarItem("chat", "커뮤니티"),
+          _bottomNavigationBarItem("user", "설정"),
+        ],
+      );
+    }
 
     final profile_bg = Image.asset(
       'image/profile.png',
@@ -139,53 +185,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('메인 화면'),
-        actions: [
-          IconButton(
-              onPressed: () {
-                print('아이콘 클릭');
-              },
-              icon: Icon(Icons.location_on)
-          ),
-        ],
-      ),
-      backgroundColor: Colors.white,
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Container(
-                color: Colors.white,
-                height: MediaQuery.of(context).size.height/1.2,
-                child: Padding(
-                  padding: const EdgeInsets.all(21.0),
-                  child: Column(
-                    children: <Widget>[
-                      top_bg,
-                      SizedBox(height: 5),
-                      bottom_bg,
-                    ],
-                  ),
+    final main = Center(
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              color: Colors.white,
+              height: MediaQuery.of(context).size.height/1.3,
+              child: Padding(
+                padding: const EdgeInsets.all(21.0),
+                child: Column(
+                  children: <Widget>[
+                    top_bg,
+                    SizedBox(height: 5),
+                    bottom_bg,
+                  ],
                 ),
               ),
-              Container(
-                color: Colors.grey,
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height/20,
-                child: Padding(
-                  padding: const EdgeInsets.all(21.0),
-                  child: Column(
-                    children: <Widget>[
-                    ],
-                  ),
-                ),
-              )
-            ],
-          ),
+            )
+          ],
         ),
       ),
+    );
+
+    Widget _bodyWidget() {
+      switch (_currentPageIndex) {
+        case 0:
+          return HomeScreen();
+          break;
+        case 1:
+          return MapScreen();
+          break;
+        case 2:
+          return Container();
+          break;
+        case 3:
+          return Container();
+          break;
+        case 4:
+          return main;
+          break;
+      }
+      return Container();
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: _bodyWidget(),
     );
   }
 

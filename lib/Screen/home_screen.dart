@@ -1,3 +1,6 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -5,6 +8,27 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:app_project/model/user_model.dart';
 import 'package:app_project/Screen/login_screen.dart';
+import 'package:app_project/Screen/map_screen.dart';
+import 'package:app_project/Screen/profile_screen.dart';
+
+enum Menus { progress, news, ends}
+
+extension ParseToString on Menus {
+  String toStrings() {
+    var result;
+
+    if (this.toString().split('.').last == 'progress') {
+      result = '진행';
+    }else if (this.toString().split('.').last == 'news') {
+      result = '예정';
+    }
+    if (this.toString().split('.').last == 'ends') {
+      result = '완료';
+    }
+
+    return result;
+  }
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -14,6 +38,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
+  List<bool> _selections1 = List.generate(3, (index) => false);
+  Menus? _selection;
+  String? lavels;
+
+  late int _currentPageIndex;
 
   User? user = FirebaseAuth.instance.currentUser;
   UserModel loggedInUser = UserModel();
@@ -25,6 +55,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     all_event = new List.empty(growable: true);
+    lavels = "진행중";
+
+    _currentPageIndex = 0;
+
     FirebaseFirestore.instance
     .collection("users")
     .doc(user!.uid)
@@ -42,14 +76,110 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
 
+    BottomNavigationBarItem _bottomNavigationBarItem(String iconName, String label) {
+      return BottomNavigationBarItem(
+        icon:Padding(
+          padding: const EdgeInsets.only(bottom: 5),
+          child: SvgPicture.asset("assets/svg/${iconName}_off.svg",width:22),
+        ),
+        activeIcon: Padding(
+          padding: const EdgeInsets.only(bottom: 5),
+          child: SvgPicture.asset("assets/svg/${iconName}_on.svg",width:22),
+        ),
+        label: label,
+      );
+    }
+
+    Widget _bottomNavigationBarwidget(){
+      return BottomNavigationBar(
+        type: BottomNavigationBarType.fixed, //설정 하지않으면 아이콘 누를경우 위로 올라감.
+        onTap: (int index){
+          print(index); // 작동하는지 테스트.
+          setState(() {
+            _currentPageIndex = index;
+          });
+        },
+        currentIndex: _currentPageIndex,
+        selectedFontSize: 12,
+        selectedItemColor: Colors.black, // 선택한 아이콘 글자 표시 및 색상 설정
+        selectedLabelStyle: TextStyle(color: Colors.black),// 선택한 아이콘 글자 표시 및 색상 설정
+        items: [
+          _bottomNavigationBarItem("home", "홈"),
+          _bottomNavigationBarItem("location", "지도"),
+          _bottomNavigationBarItem("notes", "캘린더"),
+          _bottomNavigationBarItem("chat", "커뮤니티"),
+          _bottomNavigationBarItem("user", "설정"),
+        ],
+      );
+    }
+
+    final slides = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        SizedBox(width: 10),
+        Text(
+          '축제 일정',
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: 18,
+            letterSpacing: 1.0,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(width: 200),
+        Row(
+          children: <Widget>[
+            Text(
+              '${lavels}',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 13,
+                letterSpacing: 1.0,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            PopupMenuButton(
+              icon: Icon(Icons.settings),
+              onSelected: (Menus result) {
+                setState(() {
+                  _selection = result;
+                  if (_selection == Menus.news) {
+                    getJSONDate("new");
+                    lavels = "예정중";
+                  }
+
+                  if (_selection == Menus.progress) {
+                    getJSONDate("progress");
+                    lavels = "진행중";
+                  }
+
+                  if (_selection == Menus.ends) {
+                    getJSONDate("end");
+                    lavels = "완료중";
+                  }
+                });
+              },
+              itemBuilder: (BuildContext context) => Menus.values
+                  .map((value) => PopupMenuItem (
+                value: value,
+                child: Text(value.toStrings()),
+              )).toList(),
+            )
+          ],
+        )
+      ],
+    );
+
     final serverText = Text(
       '서버와 연결되지 않습니다.',
-       style: TextStyle(
-         color: Colors.black,
-         fontSize: 18,
-         letterSpacing: 2.0,
-       ),
-       textAlign: TextAlign.center,
+      style: TextStyle(
+        color: Colors.black,
+        fontSize: 18,
+        letterSpacing: 2.0,
+      ),
+      textAlign: TextAlign.center,
     );
 
     final festival_bg = Image.asset(
@@ -59,50 +189,165 @@ class _HomeScreenState extends State<HomeScreen> {
       fit: BoxFit.fitHeight,
     );
 
-    final cards = ListView.builder(
-      itemBuilder: (context, index) {
-        return Card(
-          child: InkWell(
-            child: Material(
-              elevation: 5,
-              borderRadius: BorderRadius.circular(5),
-              color: Colors.white,
-              child: MaterialButton(
-                padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-                minWidth: 500,
-                height: 100,
-                onPressed: () {
-                  print('눌럿냐');
-                },
-                child: Row(
-                  children: <Widget>[
-                    festival_bg,
-                    SizedBox(width: 20),
-                    Container (
-                      child: Text(
-                        all_event![0]['행사명'][index.toString()] + '\n' +
-                            '기간: ' + all_event![0]['시작일자'][index.toString()] + ' ~ ' +
-                            all_event![0]['종료일자'][index.toString()] + '\n' +
-                            '장소: ' + all_event![0]['개최장소'][index.toString()],
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 10,
-                          letterSpacing: 2.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.left,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+    final main = Center(
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              color: Colors.black12,
+              height: MediaQuery.of(context).size.height/1.175,
+              child: Container(
+                child: Column(
+                  children: [
+                    Container(
+                      //color: Colors.blue,
+                      height: MediaQuery.of(context).size.height/20,
+                      child: slides,
                     ),
+                    Container(
+                      height: MediaQuery.of(context).size.height/1.25,
+                      child: Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: all_event!.length == 0 ?
+                          serverText :
+                          ListView.builder(
+                            itemBuilder: (context, index) {
+                              return Card(
+                                child: InkWell(
+                                  child: Material(
+                                    color: Colors.black12,
+                                    child: MaterialButton(
+                                      elevation: 5,
+                                      color: Colors.white,
+                                      padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+                                      minWidth: 500,
+                                      height: 200,
+                                      onPressed: () {
+                                        print('눌럿냐');
+                                      },
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Row(
+                                        children: <Widget>[
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(15),
+                                            child: festival_bg,
+                                          ),
+                                          SizedBox(width: 20),
+                                          Container (
+                                            child: Column(
+                                              children: <Widget>[
+                                                Container(
+                                                  //color: Colors.red,
+                                                    height: 50,
+                                                    width: 190,
+                                                    child: Text(
+                                                      all_event![0]['행사명'][index.toString()],
+                                                      style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontSize: 16,
+                                                        letterSpacing: 0.1,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                      textAlign: TextAlign.justify,
+                                                      //overflow: TextOverflow.ellipsis,
+                                                    )
+                                                ),
+                                                SizedBox(height: 1),
+                                                Container(
+                                                  //color: Colors.red,
+                                                    height: 20,
+                                                    width: 190,
+                                                    child: Text(
+                                                      '기간: ' + all_event![0]['시작일자'][index.toString()] + ' ~ ' + all_event![0]['종료일자'][index.toString()],
+                                                      style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontSize: 12,
+                                                        letterSpacing: 0.1,
+                                                        fontWeight: FontWeight.normal,
+                                                      ),
+                                                      textAlign: TextAlign.justify,
+                                                      //overflow: TextOverflow.ellipsis,
+                                                    )
+                                                ),
+                                                SizedBox(height: 1),
+                                                Container(
+                                                  //color: Colors.red,
+                                                    height: 20,
+                                                    width: 190,
+                                                    child: Text(
+                                                      '장소: ' + all_event![0]['개최장소'][index.toString()],
+                                                      style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontSize: 12,
+                                                        letterSpacing: 0.1,
+                                                        fontWeight: FontWeight.normal,
+                                                      ),
+                                                      textAlign: TextAlign.justify,
+                                                      //overflow: TextOverflow.ellipsis,
+                                                    )
+                                                ),
+                                                SizedBox(height: 1),
+                                                Container(
+                                                  //color: Colors.red,
+                                                    height: 50,
+                                                    width: 190,
+                                                    child: Text(
+                                                      '내용: ' + all_event![0]['행사내용'][index.toString()],
+                                                      style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontSize: 12,
+                                                        letterSpacing: 0.1,
+                                                        fontWeight: FontWeight.normal,
+                                                      ),
+                                                      textAlign: TextAlign.justify,
+                                                      //overflow: TextOverflow.ellipsis,
+                                                    )
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                            itemCount: all_event![0]["행사명"].length,
+                          )
+                      ),
+                    )
                   ],
                 ),
               ),
-            ),
-          ),
-        );
-      },
-      itemCount: all_event![0]["행사명"].length,
+            )
+          ],
+        ),
+      ),
     );
+
+    Widget _bodyWidget() {
+      switch (_currentPageIndex) {
+        case 0:
+          return main;
+          break;
+        case 1:
+          return MapScreen();
+          break;
+        case 2:
+          return Container();
+          break;
+        case 3:
+          return Container();
+          break;
+        case 4:
+          return ProfileScreen();
+          break;
+      }
+      return Container();
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -118,22 +363,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       backgroundColor: Colors.white,
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Container(
-                color: Colors.black12,
-                height: MediaQuery.of(context).size.height/1.5,
-                child: Padding(
-                  padding: const EdgeInsets.all(21.0),
-                  child: cards,
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
+      body: _bodyWidget(),
+      bottomNavigationBar: _bottomNavigationBarwidget(),
     );
   }
 

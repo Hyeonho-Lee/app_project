@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:async';
@@ -6,6 +8,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 //import 'package:platform_maps_flutter/platform_maps_flutter.dart';
+import 'package:app_project/Screen/home_screen.dart';
+import 'package:app_project/Screen/profile_screen.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -26,7 +30,7 @@ class _MapScreenState extends State<MapScreen> {
   String locality='';
   String postalCode='';
 
-  late Position position;
+  Position? position;
 
   List<Marker> _marker = [];
 
@@ -34,7 +38,10 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     all_event = new List.empty(growable: true);
-    _currentPageIndex = 0;
+    _currentPageIndex = 1;
+
+    position = null;
+
     getLocation();
     getJSONDate("progress");
   }
@@ -43,10 +50,10 @@ class _MapScreenState extends State<MapScreen> {
     LocationPermission permission = await Geolocator.requestPermission();
     position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-    List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+    List<Placemark> placemarks = await placemarkFromCoordinates(position!.latitude, position!.longitude);
     print("//////////////////////////////////");
-    print(position.latitude);
-    print(position.longitude);
+    print(position!.latitude);
+    print(position!.longitude);
     print("//////////////////////////////////");
     print(placemarks.toString());
     setState(() {
@@ -89,37 +96,52 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
+  Widget main() {
+    return GoogleMap(
+      mapType: MapType.hybrid,
+      initialCameraPosition: CameraPosition(
+        target: LatLng(position!.latitude, position!.longitude),
+        zoom: 14.4746,
+      ),
+      onMapCreated: (GoogleMapController controller) {
+        _controller.complete(controller);
+      },
+      markers: Set<Marker>.of(_marker)
+    );
+
+    /*floatingActionButton: FloatingActionButton(
+      onPressed: _goToTheLake,
+      child: Icon(Icons.add)
+    );*/
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    Widget _bodyWidget() {
+      switch (_currentPageIndex) {
+        case 0:
+          return HomeScreen();
+          break;
+        case 1:
+          return main();
+          break;
+        case 2:
+          return Container();
+          break;
+        case 3:
+          return Container();
+          break;
+        case 4:
+          return ProfileScreen();
+          break;
+      }
+      return Container();
+    }
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text('메인 화면'),
-        actions: [
-          IconButton(
-              onPressed: () {
-                print('아이콘 클릭');
-                getJSONDate("new");
-              },
-              icon: Icon(Icons.location_on)
-          ),
-        ],
-      ),
       backgroundColor: Colors.white,
-      body: GoogleMap(
-        mapType: MapType.hybrid,
-        initialCameraPosition: CameraPosition(
-          target: LatLng(position.latitude, position.longitude),
-          zoom: 14.4746,
-        ),
-        onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller);
-        },
-        markers: Set<Marker>.of(_marker),
-      ),floatingActionButton: FloatingActionButton(
-        onPressed: _goToTheLake,
-        child: Icon(Icons.add)
-      ),
-      //bottomNavigationBar: _bottomNavigationBarWidget(),
+      body: _bodyWidget(),
     );
   }
 
@@ -148,29 +170,31 @@ class _MapScreenState extends State<MapScreen> {
         all_event = new List.empty(growable: true);
         all_event!.add(json_decode);
 
-        Marker mark_1 = Marker(
-            markerId: MarkerId('1'),
-            position: LatLng(all_event![0]["위도"]['3'], all_event![0]["경도"]['3']),
-            infoWindow: InfoWindow(
-                title: "111"
-            )
-        );
-
-        Marker mark_2 = Marker(
-            markerId: MarkerId('2'),
-            position: LatLng(all_event![0]["위도"]['1'], all_event![0]["경도"]['1']),
-            infoWindow: InfoWindow(
-                title: "222"
-            )
-        );
-
-        _marker.add(mark_1);
-        _marker.add(mark_2);
-
         //print(all_event);
         //print(all_event![0]["행사명"]['0']);
       }
     });
+
+    if (all_event!.length != 0) {
+      Marker mark_1 = Marker(
+          markerId: MarkerId('1'),
+          position: LatLng(all_event![0]["위도"]['3'], all_event![0]["경도"]['3']),
+          infoWindow: InfoWindow(
+              title: "111"
+          )
+      );
+
+      Marker mark_2 = Marker(
+          markerId: MarkerId('2'),
+          position: LatLng(all_event![0]["위도"]['1'], all_event![0]["경도"]['1']),
+          infoWindow: InfoWindow(
+              title: "222"
+          )
+      );
+
+      _marker.add(mark_1);
+      _marker.add(mark_2);
+    }
   }
 
   Future<void> _goToTheLake() async {
@@ -178,7 +202,7 @@ class _MapScreenState extends State<MapScreen> {
     controller.animateCamera(CameraUpdate.newCameraPosition(
         CameraPosition(
             bearing: 192.8334901395799,
-            target: LatLng(position.latitude, position.longitude),
+            target: LatLng(position!.latitude, position!.longitude),
             tilt: 59.440717697143555,
             zoom: 19.151926040649414
         )
