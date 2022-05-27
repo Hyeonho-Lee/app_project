@@ -205,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: slides,
                     ),
                     Container(
-                      height: MediaQuery.of(context).size.height/1.25,
+                      height: MediaQuery.of(context).size.height/1.32,
                       child: Padding(
                           padding: const EdgeInsets.all(5.0),
                           child: all_event!.length == 0 ?

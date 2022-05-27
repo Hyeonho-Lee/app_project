@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +13,25 @@ import 'package:geocoding/geocoding.dart';
 import 'package:app_project/Screen/home_screen.dart';
 import 'package:app_project/Screen/profile_screen.dart';
 
+enum Menus { progress, news, ends}
+
+extension ParseToString on Menus {
+  String toStrings() {
+    var result;
+
+    if (this.toString().split('.').last == 'progress') {
+      result = '진행';
+    }else if (this.toString().split('.').last == 'news') {
+      result = '예정';
+    }
+    if (this.toString().split('.').last == 'ends') {
+      result = '완료';
+    }
+
+    return result;
+  }
+}
+
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
 
@@ -19,6 +40,10 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
+
+  List<bool> _selections1 = List.generate(3, (index) => false);
+  Menus? _selection;
+  String? lavels;
 
   var response;
   List? all_event;
@@ -38,9 +63,9 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     all_event = new List.empty(growable: true);
-    _currentPageIndex = 1;
+    lavels = "진행중";
 
-    position = null;
+    _currentPageIndex = 1;
 
     getLocation();
     getJSONDate("progress");
@@ -48,14 +73,11 @@ class _MapScreenState extends State<MapScreen> {
 
   getLocation() async {
     LocationPermission permission = await Geolocator.requestPermission();
-    position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-    List<Placemark> placemarks = await placemarkFromCoordinates(position!.latitude, position!.longitude);
-    print("//////////////////////////////////");
-    print(position!.latitude);
-    print(position!.longitude);
-    print("//////////////////////////////////");
-    print(placemarks.toString());
+    position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    //List<Placemark> placemarks = await placemarkFromCoordinates(position!.latitude, position!.longitude);
+    //print(position!.latitude);
+    //print(position!.longitude);
+    //print(placemarks.toString());
     setState(() {
       //country = placemarks[0].country == null? "": placemarks[0].country!;
       //locality = placemarks[0].locality == null? "": placemarks[0].locality!;
@@ -97,22 +119,106 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Widget main() {
-    return GoogleMap(
-      mapType: MapType.hybrid,
-      initialCameraPosition: CameraPosition(
-        target: LatLng(position!.latitude, position!.longitude),
-        zoom: 14.4746,
+    return Container(
+      child: Column(
+        children: [
+          test(),
+          Container(
+            width: 500,
+            height: 550,
+            child: GoogleMap(
+                mapType: MapType.hybrid,
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(position!.latitude, position!.longitude),
+                  zoom: 14.4746,
+                ),
+                onMapCreated: (GoogleMapController controller) {
+                  _controller.complete(controller);
+                },
+                markers: Set<Marker>.of(_marker)
+            ),
+          )
+        ],
       ),
-      onMapCreated: (GoogleMapController controller) {
-        _controller.complete(controller);
-      },
-      markers: Set<Marker>.of(_marker)
     );
 
     /*floatingActionButton: FloatingActionButton(
       onPressed: _goToTheLake,
       child: Icon(Icons.add)
     );*/
+  }
+
+  Widget main_text() {
+    return Text(
+      '좌표를 불러오는중 입니다.',
+      style: TextStyle(
+        color: Colors.black,
+        fontSize: 18,
+        letterSpacing: 2.0,
+      ),
+      textAlign: TextAlign.center,
+    );
+  }
+
+  Widget test() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        SizedBox(width: 10),
+        Text(
+          '축제 일정',
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: 18,
+            letterSpacing: 1.0,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(width: 200),
+        Row(
+          children: <Widget>[
+            Text(
+              '${lavels}',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 13,
+                letterSpacing: 1.0,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            PopupMenuButton(
+              icon: Icon(Icons.settings),
+              onSelected: (Menus result) {
+                setState(() {
+                  _selection = result;
+                  if (_selection == Menus.news) {
+                    getJSONDate("new");
+                    lavels = "예정중";
+                  }
+
+                  if (_selection == Menus.progress) {
+                    getJSONDate("progress");
+                    lavels = "진행중";
+                  }
+
+                  if (_selection == Menus.ends) {
+                    getJSONDate("end");
+                    lavels = "완료중";
+                  }
+                });
+              },
+              itemBuilder: (BuildContext context) => Menus.values
+                  .map((value) => PopupMenuItem (
+                value: value,
+                child: Text(value.toStrings()),
+              )).toList(),
+            )
+          ],
+        )
+      ],
+    );
   }
 
   @override
@@ -124,7 +230,11 @@ class _MapScreenState extends State<MapScreen> {
           return HomeScreen();
           break;
         case 1:
-          return main();
+          if (position != null) {
+            return  main();
+          }else {
+            return main_text();
+          }
           break;
         case 2:
           return Container();
@@ -146,6 +256,8 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future getJSONDate(String value) async{
+    _marker.clear();
+
     var url;
 
     if (value == "new") {
@@ -173,28 +285,42 @@ class _MapScreenState extends State<MapScreen> {
         //print(all_event);
         //print(all_event![0]["행사명"]['0']);
       }
+
+      if (all_event!.length != 0) {
+
+        for (int i = 0; i < all_event![0]["행사명"].length; i++) {
+          //print(all_event![0]["행사명"][i.toString()]);
+
+          double a = 0;
+          double b = 0;
+
+          if (all_event![0]["위도"][i.toString()] is double) {
+            a = all_event![0]["위도"][i.toString()];
+            b = all_event![0]["경도"][i.toString()];
+          }else if (all_event![0]["위도"][i.toString()] is! double){
+            if (all_event![0]["위도"][i.toString()].toString().contains("-")) {
+              a = position!.latitude;
+              b = position!.longitude;
+            }else {
+              a = double.parse(all_event![0]["위도"][i.toString()]);
+              b = double.parse(all_event![0]["경도"][i.toString()]);
+            }
+          }
+
+          Marker markss = Marker(
+            markerId: MarkerId(i.toString()),
+            position: LatLng(a, b),
+            infoWindow: InfoWindow(
+                title: all_event![0]["행사명"][i.toString()]
+            )
+          );
+
+          _marker.add(markss);
+        }
+      }else {
+        getJSONDate("progress");
+      }
     });
-
-    if (all_event!.length != 0) {
-      Marker mark_1 = Marker(
-          markerId: MarkerId('1'),
-          position: LatLng(all_event![0]["위도"]['3'], all_event![0]["경도"]['3']),
-          infoWindow: InfoWindow(
-              title: "111"
-          )
-      );
-
-      Marker mark_2 = Marker(
-          markerId: MarkerId('2'),
-          position: LatLng(all_event![0]["위도"]['1'], all_event![0]["경도"]['1']),
-          infoWindow: InfoWindow(
-              title: "222"
-          )
-      );
-
-      _marker.add(mark_1);
-      _marker.add(mark_2);
-    }
   }
 
   Future<void> _goToTheLake() async {

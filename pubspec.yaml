@@ -75,6 +75,16 @@ flutter:
     - image/login_bg3.jpg
     - image/profile.png
     - image/festival.png
+    - assets/svg/location_off.svg
+    - assets/svg/location_on.svg
+    - assets/svg/user_off.svg
+    - assets/svg/user_on.svg
+    - assets/svg/home_off.svg
+    - assets/svg/home_on.svg
+    - assets/svg/notes_off.svg
+    - assets/svg/notes_on.svg
+    - assets/svg/chat_on.svg
+    - assets/svg/chat_off.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
