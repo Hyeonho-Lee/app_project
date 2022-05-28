@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +11,7 @@ import 'package:geocoding/geocoding.dart';
 //import 'package:platform_maps_flutter/platform_maps_flutter.dart';
 import 'package:app_project/Screen/home_screen.dart';
 import 'package:app_project/Screen/profile_screen.dart';
+import 'package:app_project/Screen/community_screen.dart';
 
 enum Menus { progress, news, ends}
 
@@ -99,7 +99,7 @@ class _MapScreenState extends State<MapScreen> {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed, //설정 하지않으면 아이콘 누를경우 위로 올라감.
       onTap: (int index) {
-        print(index);
+        //print(index);
         setState(() {
           _currentPageIndex = index;
         });
@@ -125,7 +125,7 @@ class _MapScreenState extends State<MapScreen> {
           test(),
           Container(
             width: 500,
-            height: 550,
+            height: 620,
             child: GoogleMap(
                 mapType: MapType.hybrid,
                 initialCameraPosition: CameraPosition(
@@ -240,7 +240,7 @@ class _MapScreenState extends State<MapScreen> {
           return Container();
           break;
         case 3:
-          return Container();
+          return CommunityScreen();
           break;
         case 4:
           return ProfileScreen();

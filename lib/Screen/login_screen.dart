@@ -82,15 +82,6 @@ class _LoginScreenState extends State<LoginScreen> {
       ],
     );
 
-    final easyText = Text(
-      '------------------------- 간편 로그인 -------------------------',
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 16,
-      ),
-      textAlign: TextAlign.center,
-    );
-
     // 이메일 입력창 설정
     final emailField = TextFormField(
       autofocus: false,
@@ -187,41 +178,6 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
-
-    // 간편로그인 버튼 설정
-    final easyloginButton = Material(
-      elevation: 5,
-      borderRadius: BorderRadius.circular(10),
-      color: Colors.white,
-      child: MaterialButton(
-        padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-        minWidth: MediaQuery.of(context).size.width,
-        onPressed: () {
-          print("간편 로그인");
-        },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Icon(
-                Icons.login
-            ),
-            SizedBox(width: 10),
-            Text(
-              "구글 로그인",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-
-
 
     return Scaffold(
       backgroundColor: Colors.white,

@@ -10,6 +10,7 @@ import 'package:app_project/model/user_model.dart';
 import 'package:app_project/Screen/login_screen.dart';
 import 'package:app_project/Screen/map_screen.dart';
 import 'package:app_project/Screen/profile_screen.dart';
+import 'package:app_project/Screen/community_screen.dart';
 
 enum Menus { progress, news, ends}
 
@@ -94,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return BottomNavigationBar(
         type: BottomNavigationBarType.fixed, //설정 하지않으면 아이콘 누를경우 위로 올라감.
         onTap: (int index){
-          print(index); // 작동하는지 테스트.
+          //print(index); // 작동하는지 테스트.
           setState(() {
             _currentPageIndex = index;
           });
@@ -340,7 +341,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return Container();
           break;
         case 3:
-          return Container();
+          return CommunityScreen();
           break;
         case 4:
           return ProfileScreen();

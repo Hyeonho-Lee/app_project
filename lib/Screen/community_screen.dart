@@ -1,33 +1,42 @@
+import 'dart:io';
+
+import 'package:app_project/Screen/profile_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:app_project/model/user_model.dart';
+import 'package:app_project/model/write_model.dart';
 import 'package:app_project/Screen/login_screen.dart';
 import 'package:app_project/Screen/home_screen.dart';
 import 'package:app_project/Screen/map_screen.dart';
-import 'package:app_project/Screen/community_screen.dart';
+import 'package:app_project/Screen/write_screen.dart';
 
-class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+class CommunityScreen extends StatefulWidget {
+  const CommunityScreen({Key? key}) : super(key: key);
 
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  _CommunityScreenState createState() => _CommunityScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _CommunityScreenState extends State<CommunityScreen> {
 
   late int _currentPageIndex;
 
   User? user = FirebaseAuth.instance.currentUser;
   UserModel loggedInUser = UserModel();
 
+  late var all_write;
+  var test;
+
+  final TextEditingController titleController = new TextEditingController();
+
   @override
   void initState() {
     super.initState();
 
-    _currentPageIndex = 4;
+    _currentPageIndex = 3;
 
     FirebaseFirestore.instance
         .collection("users")
@@ -39,6 +48,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       });
     });
+
+    Update_Data();
   }
 
   @override
@@ -81,108 +92,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
-    final profile_bg = Image.asset(
-      'image/profile.png',
-      height: 200,
-      fit: BoxFit.fitHeight,
-    );
-
-    final nicknameText = Text(
-      '아이디: ${loggedInUser.nickname}',
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 18,
-        letterSpacing: 2.0,
-        fontWeight: FontWeight.bold,
-      ),
-    );
-
-    final emailText = Text(
-      '이메일: ${loggedInUser.email}',
-      style: TextStyle(
-        color: Colors.black,
-        fontSize: 18,
-        letterSpacing: 2.0,
-        fontWeight: FontWeight.bold,
-      ),
-    );
-
-    final locationButton = Material(
-      elevation: 5,
-      borderRadius: BorderRadius.circular(5),
-      color: Colors.white,
-      child: MaterialButton(
-        padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-        onPressed: () {
-          print("위치설정");
-        },
-        minWidth: 320,
-        height: 50,
-        child: Text(
-          "위치설정",
-          textAlign: TextAlign.left,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
+    final emailField = TextFormField(
+      autofocus: false,
+      controller: titleController,
+      keyboardType: TextInputType.emailAddress,
+      validator: (value) {
+        if (value!.isEmpty) {
+          return ("이메일 주소를 입력해주세요!");
+        }
+        if(!RegExp("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9+_.-]+.[a-z]").hasMatch(value)) {
+          return ("이메일 주소가 틀렸습니다!");
+        }
+        return null;
+      },
+      onSaved: (value) {
+        titleController.text = value!;
+      },
+      textInputAction: TextInputAction.next,
+      decoration: InputDecoration(
+          prefixIcon: Icon(Icons.email_outlined),
+          contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+          hintText: "이메일 주소를 입력해주세요",
+          hintStyle: TextStyle(
+            fontSize: 12,
           ),
-        ),
-      ),
-    );
-
-    final loginoutButton = Material(
-      elevation: 5,
-      borderRadius: BorderRadius.circular(5),
-      color: Colors.white,
-      child: MaterialButton(
-        padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-        onPressed: () {
-          logout(context);
-        },
-        minWidth: 320,
-        height: 50,
-        child: Text(
-          "로그아웃",
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
+          suffixIcon: GestureDetector(
+            child: const Icon(
+                Icons.cancel_outlined
+            ),
+            //onTap: () => emailController.clear(),
           ),
-        ),
-      ),
-    );
-
-    final top_bg = Container(
-      width: 400,
-      height: 350,
-      color: Colors.black12,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          profile_bg,
-          SizedBox(height: 20),
-          nicknameText,
-          SizedBox(height: 5),
-          emailText,
-          SizedBox(height: 5),
-        ],
-      ),
-    );
-
-    final bottom_bg = Container(
-      width: 350,
-      height: 200,
-      color: Colors.black12,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          locationButton,
-          SizedBox(height: 5),
-          loginoutButton,
-        ],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+          )
       ),
     );
 
@@ -192,14 +134,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             Container(
               color: Colors.white,
-              height: MediaQuery.of(context).size.height/1.3,
+              height: MediaQuery.of(context).size.height/1.23,
               child: Padding(
                 padding: const EdgeInsets.all(21.0),
                 child: Column(
                   children: <Widget>[
-                    top_bg,
+                    Text("hello"),
                     SizedBox(height: 5),
-                    bottom_bg,
                   ],
                 ),
               ),
@@ -221,10 +162,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           return Container();
           break;
         case 3:
-          return CommunityScreen();
+          return main;
           break;
         case 4:
-          return main;
+          return ProfileScreen();
           break;
       }
       return Container();
@@ -233,11 +174,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: _bodyWidget(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => WriteScreen()));
+        },
+        child: Icon(Icons.add),
+      ),
     );
   }
 
   Future<void> logout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();
     Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => LoginScreen()));
+  }
+
+  void Update_Data() async {
+    all_write = FirebaseFirestore.instance.collection("dashboard")
+        .get()
+        .then((value) {
+          print(value.docs.length);
+          print(value.docs[4].data()["nickname"]);
+        }
+    );
   }
 }
