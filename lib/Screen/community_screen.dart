@@ -28,7 +28,11 @@ class _CommunityScreenState extends State<CommunityScreen> {
   UserModel loggedInUser = UserModel();
 
   late var all_write;
-  var test;
+
+  var all_title = new List.empty(growable: true);
+  var all_text = new List.empty(growable: true);
+  var all_nickname = new List.empty(growable: true);
+  var all_date = new List.empty(growable: true);
 
   final TextEditingController titleController = new TextEditingController();
 
@@ -134,13 +138,51 @@ class _CommunityScreenState extends State<CommunityScreen> {
           children: [
             Container(
               color: Colors.white,
-              height: MediaQuery.of(context).size.height/1.23,
+              height: MediaQuery.of(context).size.height/1.15,
               child: Padding(
-                padding: const EdgeInsets.all(21.0),
+                padding: const EdgeInsets.all(5.0),
                 child: Column(
                   children: <Widget>[
-                    Text("hello"),
-                    SizedBox(height: 5),
+                    Container(
+                      height: MediaQuery.of(context).size.height/1.25,
+                      child: Padding(
+                          padding: const EdgeInsets.all(2.0),
+                          child: all_title.length == 0 ?
+                          Text("데이터를 불러오는 중입니다.") :
+                          ListView.builder(
+                            itemBuilder: (context, index) {
+                              return Card(
+                                child: InkWell(
+                                  child: Material(
+                                    color: Colors.black12,
+                                    child: MaterialButton(
+                                      elevation: 5,
+                                      color: Colors.white,
+                                      padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+                                      minWidth: 500,
+                                      height: 100,
+                                      onPressed: () {
+                                        print('눌럿냐');
+                                      },
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
+                                      child: Row(
+                                        children: <Widget>[
+                                          Text(all_nickname[index].toString() + " / "),
+                                          Text(all_title[index].toString() + " / "),
+                                          Text(all_text[index].toString())
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                            itemCount: all_title.length,
+                          )
+                      ),
+                    )
                   ],
                 ),
               ),
@@ -192,9 +234,16 @@ class _CommunityScreenState extends State<CommunityScreen> {
     all_write = FirebaseFirestore.instance.collection("dashboard")
         .get()
         .then((value) {
-          print(value.docs.length);
-          print(value.docs[4].data()["nickname"]);
+          for (int i = 0; i < value.docs.length; i++) {
+            all_title.add(value.docs[i].data()["title"]);
+            all_text.add(value.docs[i].data()["text"]);
+            all_nickname.add(value.docs[i].data()["nickname"]);
+            all_date.add(value.docs[i].data()["date"]);
+          }
+          print("불러오기 성공");
         }
     );
+
+    print(all_title);
   }
 }

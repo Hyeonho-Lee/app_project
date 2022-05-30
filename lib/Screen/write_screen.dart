@@ -139,7 +139,6 @@ class _WriteScreenState extends State<WriteScreen> {
         minWidth: MediaQuery.of(context).size.width,
         onPressed: () {
           postDetailsToFirestore();
-          Navigator.of(context).pop();
         },
         child: Text(
           "작성하기",
@@ -173,7 +172,7 @@ class _WriteScreenState extends State<WriteScreen> {
                 color: Colors.white,
                 height: MediaQuery.of(context).size.height/1.1,
                 child: Padding(
-                  padding: const EdgeInsets.all(42.0),
+                  padding: const EdgeInsets.all(21.0),
                   child: Form(
                     key: _formKey,
                     child: Column(
@@ -213,20 +212,25 @@ class _WriteScreenState extends State<WriteScreen> {
   }
 
   postDetailsToFirestore() async {
-    FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
-    User? user = _auth.currentUser;
+    if (_formKey.currentState!.validate()) {
+      FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
+      User? user = _auth.currentUser;
 
-    WriteModel writeModel = WriteModel();
+      WriteModel writeModel = WriteModel();
 
-    writeModel.uid = user!.uid;
-    writeModel.nickname = loggedInUser.nickname;
-    writeModel.title = titleController.text;
-    writeModel.text = textController.text;
+      writeModel.uid = user!.uid;
+      writeModel.nickname = loggedInUser.nickname;
+      writeModel.title = titleController.text;
+      writeModel.text = textController.text;
+      writeModel.date = DateTime.now().toString();
 
-    await firebaseFirestore
-        .collection("dashboard")
-        .doc(DateTime.now().toString())
-        .set(writeModel.toMap());
-    Fluttertoast.showToast(msg: "작성 성공! :)");
+      await firebaseFirestore
+          .collection("dashboard")
+          .doc(DateTime.now().toString())
+          .set(writeModel.toMap());
+      Fluttertoast.showToast(msg: "작성 성공! :)");
+
+      Navigator.of(context).pop();
+    }
   }
 }

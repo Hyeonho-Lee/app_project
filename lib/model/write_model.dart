@@ -3,8 +3,9 @@ class WriteModel {
   String? nickname;
   String? title;
   String? text;
+  String? date;
 
-  WriteModel({this.uid, this.nickname, this.title, this.text});
+  WriteModel({this.uid, this.nickname, this.title, this.text, this.date});
 
   factory WriteModel.fromMap(map) {
     return WriteModel(
@@ -12,6 +13,7 @@ class WriteModel {
       nickname: map['nickname'],
       title: map['title'],
       text: map['text'],
+      date: map['date'],
     );
   }
 
@@ -21,6 +23,7 @@ class WriteModel {
       'nickname': nickname,
       'title': title,
       'text': text,
+      'date': date,
     };
   }
 }
