@@ -12,6 +12,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:app_project/Screen/home_screen.dart';
 import 'package:app_project/Screen/profile_screen.dart';
 import 'package:app_project/Screen/community_screen.dart';
+import 'package:app_project/Screen/calender_screen.dart';
 
 enum Menus { progress, news, ends}
 
@@ -74,15 +75,15 @@ class _MapScreenState extends State<MapScreen> {
   getLocation() async {
     LocationPermission permission = await Geolocator.requestPermission();
     position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    //List<Placemark> placemarks = await placemarkFromCoordinates(position!.latitude, position!.longitude);
-    //print(position!.latitude);
-    //print(position!.longitude);
-    //print(placemarks.toString());
+    List<Placemark> placemarks = await placemarkFromCoordinates(position!.latitude, position!.longitude);
+    print(position!.latitude);
+    print(position!.longitude);
+    print(placemarks.toString());
     setState(() {
-      //country = placemarks[0].country == null? "": placemarks[0].country!;
-      //locality = placemarks[0].locality == null? "": placemarks[0].locality!;
-      //postalCode = placemarks[0].postalCode == null? "": placemarks[0].postalCode!;
-      // print(placemarks[0].toString());
+      country = placemarks[0].country == null? "": placemarks[0].country!;
+      locality = placemarks[0].locality == null? "": placemarks[0].locality!;
+      postalCode = placemarks[0].postalCode == null? "": placemarks[0].postalCode!;
+      print(placemarks[0].toString());
     });
   }
 
@@ -125,7 +126,7 @@ class _MapScreenState extends State<MapScreen> {
           test(),
           Container(
             width: 500,
-            height: 620,
+            height: 550,
             child: GoogleMap(
                 mapType: MapType.hybrid,
                 initialCameraPosition: CameraPosition(
@@ -237,7 +238,7 @@ class _MapScreenState extends State<MapScreen> {
           }
           break;
         case 2:
-          return Container();
+          return CalenderScreen();
           break;
         case 3:
           return CommunityScreen();
@@ -311,7 +312,9 @@ class _MapScreenState extends State<MapScreen> {
             markerId: MarkerId(i.toString()),
             position: LatLng(a, b),
             infoWindow: InfoWindow(
-                title: all_event![0]["행사명"][i.toString()]
+                title: all_event![0]["행사명"][i.toString()],
+                snippet: "일정: " + all_event![0]["시작일자"][i.toString()] + " ~ " +
+                    all_event![0]["종료일자"][i.toString()]
             )
           );
 

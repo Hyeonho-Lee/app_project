@@ -11,6 +11,11 @@ import 'package:app_project/Screen/login_screen.dart';
 import 'package:app_project/Screen/map_screen.dart';
 import 'package:app_project/Screen/profile_screen.dart';
 import 'package:app_project/Screen/community_screen.dart';
+import 'package:app_project/Screen/calender_screen.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import 'dart:async';
 
 enum Menus { progress, news, ends}
 
@@ -52,6 +57,17 @@ class _HomeScreenState extends State<HomeScreen> {
   var response;
   List? all_event;
 
+  Completer<GoogleMapController> _controller = Completer();
+
+  String country='';
+  String locality='';
+  String postalCode='';
+  String location_text='';
+
+  Position? position;
+
+  List<Placemark> placemarks = [];
+
   @override
   void initState() {
     super.initState();
@@ -76,6 +92,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    getLocation() async {
+      LocationPermission permission = await Geolocator.requestPermission();
+      position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      placemarks = await placemarkFromCoordinates(position!.latitude, position!.longitude);
+      //print(position!.latitude);
+      //print(position!.longitude);
+      //print(placemarks!.toString());
+      setState(() {
+        //country = placemarks[0].country == null? "": placemarks[0].country!;
+        //locality = placemarks[0].locality == null? "": placemarks[0].locality!;
+        location_text = placemarks[0].subLocality == null? "": placemarks[0].subLocality!;
+        //print(location_text);
+        //postalCode = placemarks[0].postalCode == null? "": placemarks[0].postalCode!;
+        //print(placemarks[0].toString());
+      });
+    }
 
     BottomNavigationBarItem _bottomNavigationBarItem(String iconName, String label) {
       return BottomNavigationBarItem(
@@ -338,7 +371,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return MapScreen();
           break;
         case 2:
-          return Container();
+          return CalenderScreen();
           break;
         case 3:
           return CommunityScreen();
@@ -352,12 +385,36 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('메인 화면'),
+        title: Text(
+          '컬쳐 라이프',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            letterSpacing: 1.0,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
         actions: [
+          Container(
+            //color: Colors.red,
+            width: 120,
+            child: Center(
+              child: Text(
+                '${location_text}',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  letterSpacing: 1.0,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
           IconButton(
               onPressed: () {
-                print('아이콘 클릭');
-                getJSONDate("new");
+                getLocation();
               },
               icon: Icon(Icons.location_on)
           ),

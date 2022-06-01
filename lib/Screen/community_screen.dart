@@ -12,6 +12,7 @@ import 'package:app_project/Screen/login_screen.dart';
 import 'package:app_project/Screen/home_screen.dart';
 import 'package:app_project/Screen/map_screen.dart';
 import 'package:app_project/Screen/write_screen.dart';
+import 'package:app_project/Screen/calender_screen.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({Key? key}) : super(key: key);
@@ -201,7 +202,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
           return MapScreen();
           break;
         case 2:
-          return Container();
+          return CalenderScreen();
           break;
         case 3:
           return main;

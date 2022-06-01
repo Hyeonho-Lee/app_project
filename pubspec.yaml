@@ -45,6 +45,7 @@ dependencies:
   flutter_svg: ^1.0.3
   geolocator: ^8.2.1
   geocoding: ^2.0.4
+  flutter_clean_calendar: ^1.1.0
 
 dev_dependencies:
   flutter_test:

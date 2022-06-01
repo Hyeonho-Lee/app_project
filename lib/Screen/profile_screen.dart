@@ -8,6 +8,7 @@ import 'package:app_project/Screen/login_screen.dart';
 import 'package:app_project/Screen/home_screen.dart';
 import 'package:app_project/Screen/map_screen.dart';
 import 'package:app_project/Screen/community_screen.dart';
+import 'package:app_project/Screen/calender_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -173,7 +174,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final bottom_bg = Container(
       width: 350,
-      height: 200,
+      height: 150,
       color: Colors.black12,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -218,7 +219,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           return MapScreen();
           break;
         case 2:
-          return Container();
+          return CalenderScreen();
           break;
         case 3:
           return CommunityScreen();
