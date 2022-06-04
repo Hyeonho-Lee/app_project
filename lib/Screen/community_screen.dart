@@ -161,18 +161,87 @@ class _CommunityScreenState extends State<CommunityScreen> {
                                       color: Colors.white,
                                       padding: EdgeInsets.fromLTRB(20, 15, 20, 15),
                                       minWidth: 500,
-                                      height: 100,
+                                      height: 300,
                                       onPressed: () {
                                         print('눌럿냐');
                                       },
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(5),
                                       ),
-                                      child: Row(
+                                      child: Column(
                                         children: <Widget>[
-                                          Text(all_nickname[index].toString() + " / "),
-                                          Text(all_title[index].toString() + " / "),
-                                          Text(all_text[index].toString())
+                                          Container(
+                                            width: 500,
+                                            height: 40,
+                                            child: Row(
+                                              children: <Widget>[
+                                                Container(
+                                                  height: 80,
+                                                  width: 40,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.grey,
+                                                    borderRadius: BorderRadius.circular(100)
+                                                  )
+                                                ),
+                                                SizedBox(width: 10),
+                                                Text(
+                                                  all_nickname[index].toString() + " / " +
+                                                  all_date[index].toString().substring(0,10),
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Container(
+                                            width: 500,
+                                            height: 30,
+                                            decoration: BoxDecoration(
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey.withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 1,
+                                                  offset: Offset(0, 1), // changes position of shadow
+                                                ),
+                                              ],
+                                            ),
+                                            child: Text(
+                                              "제목: " + all_title[index].toString(),
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 18,
+                                              ),
+                                              textAlign: TextAlign.justify,
+                                            ),
+                                          ),
+                                          SizedBox(height: 10),
+                                          Container(
+                                            width: 500,
+                                            height: 180,
+                                            decoration: BoxDecoration(
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.grey.withOpacity(0.5),
+                                                  spreadRadius: 1,
+                                                  blurRadius: 1,
+                                                  offset: Offset(0, 1), // changes position of shadow
+                                                ),
+                                              ],
+                                            ),
+                                            child: Text(
+                                              "내용: " + all_text[index].toString(),
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 18,
+                                              ),
+                                              textAlign: TextAlign.justify,
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -242,6 +311,10 @@ class _CommunityScreenState extends State<CommunityScreen> {
             all_date.add(value.docs[i].data()["date"]);
           }
           print("불러오기 성공");
+          all_title = List.from(all_title.reversed);
+          all_text = List.from(all_text.reversed);
+          all_nickname = List.from(all_nickname.reversed);
+          all_date = List.from(all_date.reversed);
         }
     );
 

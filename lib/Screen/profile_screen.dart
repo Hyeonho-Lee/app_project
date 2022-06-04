@@ -156,7 +156,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final top_bg = Container(
       width: 400,
-      height: 350,
+      height: MediaQuery.of(context).size.height/2,
       color: Colors.black12,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -173,8 +173,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     final bottom_bg = Container(
-      width: 350,
-      height: 150,
+      width: 400,
+      height: MediaQuery.of(context).size.height/5,
       color: Colors.black12,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

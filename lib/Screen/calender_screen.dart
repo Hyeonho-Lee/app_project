@@ -250,7 +250,7 @@ class _CalenderScreenState extends State<CalenderScreen> {
           children: [
             Container(
               color: Colors.white,
-              height: 580,
+              height: MediaQuery.of(context).size.height/1.2,
               child:  all_event!.length == 0 ?
               serverText :
               Container(

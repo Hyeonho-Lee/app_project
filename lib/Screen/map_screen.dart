@@ -126,7 +126,7 @@ class _MapScreenState extends State<MapScreen> {
           test(),
           Container(
             width: 500,
-            height: 550,
+            height: MediaQuery.of(context).size.height/1.3,
             child: GoogleMap(
                 mapType: MapType.hybrid,
                 initialCameraPosition: CameraPosition(
